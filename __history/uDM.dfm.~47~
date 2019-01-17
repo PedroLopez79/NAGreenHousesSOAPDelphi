@@ -1,0 +1,564 @@
+object DM: TDM
+  OldCreateOrder = False
+  OnCreate = DataModuleCreate
+  Height = 369
+  Width = 504
+  object cdsBitacoraServ: TDAMemDataTable
+    Fields = <
+      item
+        Name = 'BITACORAID'
+        DataType = datInteger
+        Required = True
+      end
+      item
+        Name = 'USUARIOID'
+        DataType = datInteger
+      end
+      item
+        Name = 'FECHA'
+        DataType = datDateTime
+      end
+      item
+        Name = 'NOTA'
+        DataType = datString
+        Size = 200
+      end
+      item
+        Name = 'ACTIVIDAD'
+        DataType = datString
+        Size = 1000
+      end
+      item
+        Name = 'FRECUENCIA'
+        DataType = datString
+        Size = 1000
+      end
+      item
+        Name = 'OBSERVACIONES'
+        DataType = datString
+        Size = 1000
+      end
+      item
+        Name = 'ESTACIONID'
+        DataType = datInteger
+      end
+      item
+        Name = 'FIRMA'
+        DataType = datBlob
+      end
+      item
+        Name = 'FECHAHORA'
+        DataType = datDateTime
+      end
+      item
+        Name = 'FOLIO'
+        DataType = datInteger
+      end
+      item
+        Name = 'FOTO1'
+        DataType = datBlob
+      end>
+    LogicalName = 'dbo.BITACORAESTACION'
+    Params = <>
+    RemoteDataAdapter = RemoteDataAdapter
+    RemoteUpdatesOptions = []
+    StreamingOptions = [soDisableEventsWhileStreaming]
+    IndexDefs = <>
+    Left = 127
+    Top = 9
+  end
+  object dsBitacoraServ: TDADataSource
+    DataSet = cdsBitacoraServ.Dataset
+    DataTable = cdsBitacoraServ
+    Left = 128
+    Top = 56
+  end
+  object Channel: TROWinInetHTTPChannel
+    UserAgent = 'RemObjects SDK'
+    DispatchOptions = []
+    ServerLocators = <>
+    TargetURL = 'http://127.0.0.1:8001/BIN'
+    TrustInvalidCA = False
+    Left = 40
+    Top = 8
+  end
+  object Message: TROBinMessage
+    Envelopes = <>
+    Left = 40
+    Top = 56
+  end
+  object RemoteService: TRORemoteService
+    ServiceName = 'ServiceEmpresas'
+    Channel = Channel
+    Message = Message
+    Left = 40
+    Top = 104
+  end
+  object RemoteDataAdapter: TDARemoteDataAdapter
+    GetSchemaCall.RemoteService = RemoteService
+    GetDataCall.RemoteService = RemoteService
+    GetDataCall.MethodName = 'AbreDataSetReporte'
+    GetDataCall.Params = <
+      item
+        Name = 'Result'
+        DataType = rtBinary
+        Flag = fResult
+        Value = Null
+      end
+      item
+        Name = 'SQL'
+        DataType = rtString
+        Flag = fIn
+        Value = Null
+      end
+      item
+        Name = 'Parametros'
+        DataType = rtUserDefined
+        Flag = fIn
+        TypeName = 'TParametros'
+        Value = Null
+      end>
+    GetDataCall.Default = False
+    GetDataCall.OutgoingTableNamesParameter = 'aTableNameArray'
+    GetDataCall.OutgoingTableRequestInfosParameter = 'aTableRequestInfoArray'
+    GetDataCall.IncomingDataParameter = 'Result'
+    UpdateDataCall.RemoteService = RemoteService
+    GetScriptsCall.RemoteService = RemoteService
+    RemoteService = RemoteService
+    DataStreamer = DataStreamer
+    Left = 40
+    Top = 200
+  end
+  object DataStreamer: TDABin2DataStreamer
+    Left = 40
+    Top = 152
+  end
+  object cdsFirmaDefaultUsuario: TDAMemDataTable
+    Fields = <
+      item
+        Name = 'IDEMPLEADO'
+        DataType = datInteger
+        Required = True
+      end
+      item
+        Name = 'CODIGO'
+        DataType = datString
+        Size = 10
+      end
+      item
+        Name = 'NOMBRE'
+        DataType = datString
+        Size = 70
+      end
+      item
+        Name = 'USERNAME'
+        DataType = datString
+        Size = 10
+        Required = True
+      end
+      item
+        Name = 'USERPASSWORD'
+        DataType = datString
+        Size = 10
+        Required = True
+      end
+      item
+        Name = 'FIRMADEFAULT'
+        DataType = datBlob
+      end>
+    LogicalName = 'dbo.USUARIO'
+    Params = <
+      item
+        Name = 'USUARIOID'
+        DataType = datInteger
+        Value = ''
+        ParamType = daptInput
+      end>
+    RemoteDataAdapter = RemoteDataAdapter
+    RemoteUpdatesOptions = []
+    StreamingOptions = [soDisableEventsWhileStreaming]
+    IndexDefs = <>
+    Left = 231
+    Top = 9
+  end
+  object dsFirmaDefaultUsuario: TDADataSource
+    DataSet = cdsFirmaDefaultUsuario.Dataset
+    DataTable = cdsFirmaDefaultUsuario
+    Left = 232
+    Top = 56
+  end
+  object Channel1: TROSuperTCPChannel
+    Active = True
+    DispatchOptions = []
+    ServerLocators = <>
+    TargetUrl = 'supertcp://127.0.0.1:8001/bin'
+    Host = '127.0.0.1'
+    Port = 8001
+    Left = 384
+    Top = 8
+  end
+  object cdsEmpleadosRostros: TDAMemDataTable
+    Fields = <
+      item
+        Name = 'IDEMPLEADO'
+        DataType = datInteger
+        Required = True
+      end
+      item
+        Name = 'NOMBRE'
+        DataType = datString
+        Size = 50
+      end
+      item
+        Name = 'CODIGOEMPLEADO'
+        DataType = datString
+        Size = 10
+      end
+      item
+        Name = 'DOMICILIO'
+        DataType = datString
+        Size = 100
+      end
+      item
+        Name = 'CIUDAD'
+        DataType = datString
+        Size = 100
+      end
+      item
+        Name = 'TELEFONO'
+        DataType = datString
+        Size = 20
+      end
+      item
+        Name = 'CUENTACONTABLE'
+        DataType = datString
+        Size = 20
+      end
+      item
+        Name = 'FECHAALTA'
+        DataType = datDateTime
+      end
+      item
+        Name = 'FECHABAJA'
+        DataType = datDateTime
+      end
+      item
+        Name = 'IMSS'
+        DataType = datString
+        Size = 150
+      end
+      item
+        Name = 'STATUS'
+        DataType = datBoolean
+      end
+      item
+        Name = 'FOTOEMPLEADO'
+        DataType = datBlob
+      end
+      item
+        Name = 'IDESTACION'
+        DataType = datInteger
+      end
+      item
+        Name = 'TURNO'
+        DataType = datInteger
+      end
+      item
+        Name = 'FOTOEMPLEADO1'
+        DataType = datBlob
+      end
+      item
+        Name = 'FOTOEMPLEADO2'
+        DataType = datBlob
+      end
+      item
+        Name = 'FOTOEMPLEADO3'
+        DataType = datBlob
+      end
+      item
+        Name = 'FOTOEMPLEADO4'
+        DataType = datBlob
+      end
+      item
+        Name = 'FOTOEMPLEADO5'
+        DataType = datBlob
+      end
+      item
+        Name = 'FOTOEMPLEADO6'
+        DataType = datBlob
+      end
+      item
+        Name = 'FOTOEMPLEADO7'
+        DataType = datBlob
+      end
+      item
+        Name = 'FOTOEMPLEADO8'
+        DataType = datBlob
+      end
+      item
+        Name = 'FOTOEMPLEADO9'
+        DataType = datBlob
+      end
+      item
+        Name = 'FOTOEMPLEADO10'
+        DataType = datBlob
+      end>
+    LogicalName = 'dbo.EMPLEADO'
+    Params = <>
+    RemoteDataAdapter = RemoteDataAdapter
+    RemoteUpdatesOptions = []
+    StreamingOptions = [soDisableEventsWhileStreaming]
+    IndexDefs = <>
+    Left = 231
+    Top = 153
+  end
+  object dsEmpleadosRostros: TDADataSource
+    DataSet = cdsEmpleadosRostros.Dataset
+    DataTable = cdsEmpleadosRostros
+    Left = 232
+    Top = 200
+  end
+  object cdsActualizaEmpladosRostro: TDAMemDataTable
+    Fields = <
+      item
+        Name = 'RESULT'
+        DataType = datInteger
+      end>
+    LogicalName = 'spActualizaEmpleadosRostro'
+    Params = <
+      item
+        Name = 'FOTOEMPLEADO1'
+        DataType = datBlob
+        Value = ''
+        ParamType = daptInput
+      end
+      item
+        Name = 'FOTOEMPLEADO2'
+        DataType = datBlob
+        Value = ''
+        ParamType = daptInput
+      end
+      item
+        Name = 'FOTOEMPLEADO3'
+        DataType = datBlob
+        Value = ''
+        ParamType = daptInput
+      end
+      item
+        Name = 'FOTOEMPLEADO4'
+        DataType = datBlob
+        Value = ''
+        ParamType = daptInput
+      end
+      item
+        Name = 'FOTOEMPLEADO5'
+        DataType = datBlob
+        Value = ''
+        ParamType = daptInput
+      end
+      item
+        Name = 'FOTOEMPLEADO6'
+        DataType = datBlob
+        Value = ''
+        ParamType = daptInput
+      end
+      item
+        Name = 'FOTOEMPLEADO7'
+        DataType = datBlob
+        Value = ''
+        ParamType = daptInput
+      end
+      item
+        Name = 'FOTOEMPLEADO8'
+        DataType = datBlob
+        Value = ''
+        ParamType = daptInput
+      end
+      item
+        Name = 'FOTOEMPLEADO9'
+        DataType = datBlob
+        Value = ''
+        ParamType = daptInput
+      end
+      item
+        Name = 'FOTOEMPLEADO10'
+        DataType = datBlob
+        Value = ''
+        ParamType = daptInput
+      end
+      item
+        Name = 'IDEMPLEADO'
+        DataType = datInteger
+        Value = ''
+        ParamType = daptInput
+      end>
+    RemoteDataAdapter = RemoteDataAdapter
+    RemoteUpdatesOptions = []
+    StreamingOptions = [soDisableEventsWhileStreaming]
+    IndexDefs = <>
+    Left = 375
+    Top = 153
+  end
+  object dsActualizaempleadoRostro: TDADataSource
+    DataSet = cdsActualizaEmpladosRostro.Dataset
+    DataTable = cdsActualizaEmpladosRostro
+    Left = 376
+    Top = 200
+  end
+  object cdsScripts: TDAMemDataTable
+    Fields = <
+      item
+        Name = 'IDEMPLEADO'
+        DataType = datInteger
+        Required = True
+      end
+      item
+        Name = 'NOMBRE'
+        DataType = datString
+        Size = 50
+      end
+      item
+        Name = 'CODIGOEMPLEADO'
+        DataType = datString
+        Size = 10
+      end
+      item
+        Name = 'DOMICILIO'
+        DataType = datString
+        Size = 100
+      end
+      item
+        Name = 'CIUDAD'
+        DataType = datString
+        Size = 100
+      end
+      item
+        Name = 'TELEFONO'
+        DataType = datString
+        Size = 20
+      end
+      item
+        Name = 'CUENTACONTABLE'
+        DataType = datString
+        Size = 20
+      end
+      item
+        Name = 'FECHAALTA'
+        DataType = datDateTime
+      end
+      item
+        Name = 'FECHABAJA'
+        DataType = datDateTime
+      end
+      item
+        Name = 'IMSS'
+        DataType = datString
+        Size = 150
+      end
+      item
+        Name = 'STATUS'
+        DataType = datBoolean
+      end
+      item
+        Name = 'FOTOEMPLEADO'
+        DataType = datBlob
+      end
+      item
+        Name = 'IDESTACION'
+        DataType = datInteger
+      end
+      item
+        Name = 'TURNO'
+        DataType = datInteger
+      end
+      item
+        Name = 'FOTOEMPLEADO1'
+        DataType = datBlob
+      end
+      item
+        Name = 'FOTOEMPLEADO2'
+        DataType = datBlob
+      end
+      item
+        Name = 'FOTOEMPLEADO3'
+        DataType = datBlob
+      end
+      item
+        Name = 'FOTOEMPLEADO4'
+        DataType = datBlob
+      end
+      item
+        Name = 'FOTOEMPLEADO5'
+        DataType = datBlob
+      end
+      item
+        Name = 'FOTOEMPLEADO6'
+        DataType = datBlob
+      end
+      item
+        Name = 'FOTOEMPLEADO7'
+        DataType = datBlob
+      end
+      item
+        Name = 'FOTOEMPLEADO8'
+        DataType = datBlob
+      end
+      item
+        Name = 'FOTOEMPLEADO9'
+        DataType = datBlob
+      end
+      item
+        Name = 'FOTOEMPLEADO10'
+        DataType = datBlob
+      end>
+    LogicalName = 'Reporte'
+    Params = <>
+    RemoteDataAdapter = rdaScripts
+    RemoteUpdatesOptions = []
+    StreamingOptions = [soDisableEventsWhileStreaming]
+    IndexDefs = <>
+    Left = 319
+    Top = 273
+  end
+  object dsScripts: TDADataSource
+    DataSet = cdsScripts.Dataset
+    DataTable = cdsScripts
+    Left = 376
+    Top = 272
+  end
+  object rdaScripts: TDARemoteDataAdapter
+    GetSchemaCall.RemoteService = RemoteService
+    GetDataCall.RemoteService = RemoteService
+    GetDataCall.MethodName = 'AbreDataSetReportes'
+    GetDataCall.Params = <
+      item
+        Name = 'Result'
+        DataType = rtBinary
+        Flag = fResult
+        Value = Null
+      end
+      item
+        Name = 'SQL'
+        DataType = rtString
+        Flag = fIn
+        Value = Null
+      end
+      item
+        Name = 'Parametros'
+        DataType = rtUserDefined
+        Flag = fIn
+        TypeName = 'TParametrosF'
+        Value = Null
+      end>
+    GetDataCall.Default = False
+    GetDataCall.OutgoingTableNamesParameter = 'aTableNameArray'
+    GetDataCall.OutgoingTableRequestInfosParameter = 'aTableRequestInfoArray'
+    GetDataCall.IncomingDataParameter = 'Result'
+    UpdateDataCall.RemoteService = RemoteService
+    GetScriptsCall.RemoteService = RemoteService
+    RemoteService = RemoteService
+    DataStreamer = DataStreamer
+    Left = 320
+    Top = 320
+  end
+end

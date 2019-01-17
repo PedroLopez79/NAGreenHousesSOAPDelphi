@@ -1,0 +1,373 @@
+{ Invokable implementation File for Tandroidservice which implements Iandroidservice }
+
+unit androidserviceImpl;
+
+interface
+
+uses Soap.InvokeRegistry, System.Types, Soap.XSBuiltIns, androidserviceIntf, dialogs,
+sysutils, Soap.EncdDecd, uDM, Classes, LibraryEmpresas_Intf;
+
+type
+
+  { Tandroidservice }
+  Tandroidservice = class(TInvokableClass, Iandroidservice)
+  public
+    function echoEnum(const Value: TEnumTest): TEnumTest; stdcall;
+    function echoDoubleArray(const Value: TDoubleArray): TDoubleArray; stdcall;
+    function echoMyEmployee(const Value: TMyEmployee): TMyEmployee; stdcall;
+    function echoDouble(const Value: Double): Double; stdcall;
+    function holamundo: String; stdcall;
+    function guardadatosfirma(const Actividad,Frecuencia,Observaciones,FechaHora,Folio,Fecha,usuarioid,estacionid,firmabase64,fotobase64:AnsiString): AnsiString; stdcall;
+    function login(usr,password:AnsiString): AnsiString; stdcall;
+    function firmadefault(const Actividad, Frecuencia,
+  Observaciones, FechaHora, Folio, Fecha, usuarioid, estacionid,
+  firmabase64,fotobase64: AnsiString): AnsiString; stdcall;
+    function obtendatosEmpleados(const estacionid: AnsiString; const turno: AnsiString): AnsiString; stdcall;
+    function obtendatosActividadesProgramadas(const estacionid, Tipo: AnsiString): AnsiString; stdcall;
+    function obtenNotificacionesDiarias(const estacionid: AnsiString): AnsiString; stdcall;
+    function registraactividadrealizada(const status, nota, idmantenimiento: AnsiString): AnsiString; stdcall;
+
+    function registrapersonalrostro(EmpleadoID, Nombre, CodigoEmpleado, Domicilio, Ciudad, Telefono, CuentaContable,
+                                    Fecha, UsuarioID, EstacionID, foto1base64,
+                                                                  foto2base64,
+                                                                  foto3base64,
+                                                                  foto4base64,
+                                                                  foto5base64,
+                                                                  foto6base64,
+                                                                  foto7base64,
+                                                                  foto8base64,
+                                                                  foto9base64,
+                                                                  foto10base64: AnsiString): AnsiString; stdcall;
+    function actualizapersonalrostro(EmpleadoID, Fecha, UsuarioID, EstacionID, foto1base64,
+                                                                  foto2base64,
+                                                                  foto3base64,
+                                                                  foto4base64,
+                                                                  foto5base64,
+                                                                  foto6base64,
+                                                                  foto7base64,
+                                                                  foto8base64,
+                                                                  foto9base64,
+                                                                  foto10base64: AnsiString): AnsiString; stdcall;
+    function consultanombresrostros(Nombres, Apellidos:AnsiString): AnsiString; stdcall;
+  end;
+
+implementation
+
+function Tandroidservice.echoEnum(const Value: TEnumTest): TEnumTest; stdcall;
+begin
+  { TODO : Implement method echoEnum }
+  Result := Value;
+end;
+
+function Tandroidservice.echoDoubleArray(const Value: TDoubleArray): TDoubleArray; stdcall;
+begin
+  { TODO : Implement method echoDoubleArray }
+  Result := Value;
+end;
+
+function Tandroidservice.echoMyEmployee(const Value: TMyEmployee): TMyEmployee; stdcall;
+begin
+  { TODO : Implement method echoMyEmployee }
+  Result := TMyEmployee.Create;
+end;
+
+function Tandroidservice.firmadefault(const Actividad, Frecuencia,
+  Observaciones, FechaHora, Folio, Fecha, usuarioid, estacionid,
+  firmabase64,fotobase64: AnsiString): AnsiString; stdcall;
+var
+  respuesta: AnsiString;
+  memStm : TMemoryStream;
+  fol: integer;
+  resultado: AnsiString;
+  bytes: TBytes;
+  str: String;
+
+begin
+  respuesta:= '-1';
+
+  bytes :=  DecodeBase64(fotobase64);
+  str := TEncoding.ANSI.GetString(bytes);
+
+  memStm:= TMemoryStream.Create;
+
+  DM.cdsFirmaDefaultUsuario.Close;
+  DM.cdsFirmaDefaultUsuario.ParamByName('USUARIOID').AsInteger:= strtoint(usuarioid);
+  DM.cdsFirmaDefaultUsuario.Open;
+
+  if NOT (DM.cdsFirmaDefaultUsuario.Eof) then
+  begin
+     DM.cdsFirmaDefaultUsuario.FieldByName('FIRMADEFAULT').SaveToStream(memStm);
+  //
+  //   respuesta:= EncodeBase64(memStm, memStm.Size);
+  end;
+  fol:= DM.Folio('BITACORAID','');
+
+  DM.cdsBitacoraServ.Close;
+  DM.cdsBitacoraServ.Open;
+
+  try
+
+  DM.cdsBitacoraServ.Append;
+  DM.cdsBitacoraServ.FieldByName('BITACORAID').AsInteger:= fol;
+  DM.cdsBitacoraServ.FieldByName('USUARIOID').AsInteger:= strtoint(usuarioid);
+  DM.cdsBitacoraServ.FieldByName('FECHA').AsDateTime:= strtodate(Fecha);
+  DM.cdsBitacoraServ.FieldByName('NOTA').AsString:= '.';
+  DM.cdsBitacoraServ.FieldByName('ACTIVIDAD').AsString:= Actividad;
+  DM.cdsBitacoraServ.FieldByName('FRECUENCIA').AsString:= Frecuencia;
+  DM.cdsBitacoraServ.FieldByName('OBSERVACIONES').AsString:= Observaciones;
+  DM.cdsBitacoraServ.FieldByName('ESTACIONID').AsInteger:= strtoint(estacionid);
+  DM.cdsBitacoraServ.FieldByName('FECHAHORA').AsDateTime:= StrToDateTime(FechaHora);
+  DM.cdsBitacoraServ.FieldByName('FOLIO').AsString:= Folio;
+  DM.cdsBitacoraServ.FieldByName('FIRMA').LoadFromStream(memStm);
+  DM.cdsBitacoraServ.FieldByName('FOTO1').AsString:= str;
+
+  DM.cdsBitacoraServ.Post;
+  DM.cdsBitacoraServ.ApplyUpdates();
+  respuesta:= ' OK';
+ except
+    on E : Exception do
+    respuesta:= E.ClassName+' error raised, with message : '+E.Message;
+  end;
+
+  result:= respuesta;
+end;
+
+function Tandroidservice.guardadatosfirma(const Actividad, Frecuencia,
+  Observaciones, FechaHora, Folio, Fecha, usuarioid, estacionid,
+  firmabase64,fotobase64: AnsiString): AnsiString; stdcall;
+var
+  bytes, bytes2: TBytes;
+  str, str2: String;
+  fol: integer;
+  resultado: AnsiString;
+begin
+  resultado:= '-1';
+  bytes :=  DecodeBase64(firmabase64);
+  str := TEncoding.ANSI.GetString(bytes);
+
+  bytes2:= DecodeBase64(fotobase64);
+  str2:= TEncoding.ANSI.GetString(bytes2);
+
+  fol:= DM.Folio('BITACORAID','');
+
+  DM.cdsBitacoraServ.Close;
+  DM.cdsBitacoraServ.Open;
+
+  try
+
+  DM.cdsBitacoraServ.Append;
+  DM.cdsBitacoraServ.FieldByName('BITACORAID').AsInteger:= fol;
+  DM.cdsBitacoraServ.FieldByName('USUARIOID').AsInteger:= strtoint(usuarioid);
+  DM.cdsBitacoraServ.FieldByName('FECHA').AsDateTime:= strtodate(Fecha);
+  DM.cdsBitacoraServ.FieldByName('NOTA').AsString:= '.';
+  DM.cdsBitacoraServ.FieldByName('ACTIVIDAD').AsString:= Actividad;
+  DM.cdsBitacoraServ.FieldByName('FRECUENCIA').AsString:= Frecuencia;
+  DM.cdsBitacoraServ.FieldByName('OBSERVACIONES').AsString:= Observaciones;
+  DM.cdsBitacoraServ.FieldByName('ESTACIONID').AsInteger:= strtoint(estacionid);
+  DM.cdsBitacoraServ.FieldByName('FECHAHORA').AsDateTime:= StrToDateTime(FechaHora);
+  DM.cdsBitacoraServ.FieldByName('FOLIO').AsString:= Folio;
+  DM.cdsBitacoraServ.FieldByName('FIRMA').AsString:= str;
+  DM.cdsBitacoraServ.FieldByName('FOTO1').AsString:= str2;
+
+  DM.cdsBitacoraServ.Post;
+  DM.cdsBitacoraServ.ApplyUpdates();
+
+  resultado:= ' OK';
+ except
+    on E : Exception do
+    resultado:= E.ClassName+' error raised, with message : '+E.Message;
+  end;
+
+  result:= resultado;
+end;
+
+function Tandroidservice.holamundo: String;
+begin
+  showmessage('hola');
+end;
+
+function Tandroidservice.login(usr, password: AnsiString): AnsiString; stdcall;
+begin
+  result:= '-1';
+  try
+  result:= DM.login(usr, password);
+  except on E : Exception do
+    result:= E.Message;
+  end;
+end;
+
+function Tandroidservice.obtendatosActividadesProgramadas(const estacionid,
+  Tipo: AnsiString): AnsiString; stdcall;
+begin
+  result:= DM.Servidor.obtendatosActividadesProgramadas(strtoint(estacionid), strtoint(Tipo));
+end;
+
+function Tandroidservice.obtendatosEmpleados(
+  const estacionid: AnsiString; const turno: AnsiString): AnsiString; stdcall;
+begin
+  result:= DM.Servidor.obtendatosempleados(estacionid, turno);
+end;
+
+function Tandroidservice.obtenNotificacionesDiarias(
+  const estacionid: AnsiString): AnsiString; stdcall;
+begin
+  result:= DM.Servidor.obtenNotificacionesDiarias(strtoint(estacionid));
+end;
+
+function Tandroidservice.registraactividadrealizada(const status, nota,
+  idmantenimiento: AnsiString): AnsiString; stdcall;
+begin
+  result:= DM.Servidor.registraactividadrealizada(strtoint(idmantenimiento),nota,status);
+end;
+
+function Tandroidservice.registrapersonalrostro(EmpleadoID, Nombre, CodigoEmpleado, Domicilio, Ciudad, Telefono, CuentaContable,
+  Fecha, UsuarioID,
+  EstacionID, foto1base64, foto2base64, foto3base64, foto4base64, foto5base64,
+  foto6base64, foto7base64, foto8base64, foto9base64,
+  foto10base64: AnsiString): AnsiString;
+var
+  bytes1, bytes2, bytes3, bytes4, bytes5, bytes6, bytes7, bytes8, bytes9, bytes10: TBytes;
+  str1, str2, str3, str4, str5, str6, str7, str8, str9, str10: String;
+  respuesta: AnsiString;
+begin
+
+  //-FOTO DE ROSTROS-//
+  bytes1 :=  DecodeBase64(foto1base64);
+  str1 := TEncoding.ANSI.GetString(bytes1);
+  bytes2 :=  DecodeBase64(foto2base64);
+  str2 := TEncoding.ANSI.GetString(bytes2);
+  bytes3 :=  DecodeBase64(foto3base64);
+  str3 := TEncoding.ANSI.GetString(bytes3);
+  bytes4 :=  DecodeBase64(foto4base64);
+  str4 := TEncoding.ANSI.GetString(bytes4);
+  bytes5 :=  DecodeBase64(foto5base64);
+  str5 := TEncoding.ANSI.GetString(bytes5);
+  bytes6 :=  DecodeBase64(foto6base64);
+  str6 := TEncoding.ANSI.GetString(bytes6);
+  bytes7 :=  DecodeBase64(foto7base64);
+  str7 := TEncoding.ANSI.GetString(bytes7);
+  bytes8 :=  DecodeBase64(foto8base64);
+  str8 := TEncoding.ANSI.GetString(bytes8);
+  bytes9 :=  DecodeBase64(foto9base64);
+  str9 := TEncoding.ANSI.GetString(bytes9);
+  bytes10 :=  DecodeBase64(foto10base64);
+  str10 := TEncoding.ANSI.GetString(bytes10);
+  ///////////////////////
+  ///
+
+  DM.cdsEmpleadosRostros.Close;
+  DM.cdsEmpleadosRostros.Open;
+
+  try
+
+  DM.cdsEmpleadosRostros.Append;
+  DM.cdsEmpleadosRostros.FieldByName('IDEmpleado').AsInteger:= DM.Servidor.obtenIDEmpleado();
+  DM.cdsEmpleadosRostros.FieldByName('Nombre').AsString:= '';
+  DM.cdsEmpleadosRostros.FieldByName('CodigoEmpleado').AsString:= '';
+  DM.cdsEmpleadosRostros.FieldByName('Domicilio').AsString:= '';
+  DM.cdsEmpleadosRostros.FieldByName('Ciudad').AsString:= '';
+  DM.cdsEmpleadosRostros.FieldByName('Telefono').AsString:= '';
+  DM.cdsEmpleadosRostros.FieldByName('CuentaContable').AsString:= '';
+  DM.cdsEmpleadosRostros.FieldByName('FechaAlta').AsDateTime:= strtodate(Fecha);
+  DM.cdsEmpleadosRostros.FieldByName('FechaBaja').AsDateTime:= strtodate(Fecha);
+  DM.cdsEmpleadosRostros.FieldByName('IMSS').AsString:= '';
+  DM.cdsEmpleadosRostros.FieldByName('STATUS').AsBoolean:= True;
+  DM.cdsEmpleadosRostros.FieldByName('IDEstacion').AsInteger:= strtoint(EstacionID);
+  DM.cdsEmpleadosRostros.FieldByName('Turno').AsInteger:= 0;
+  DM.cdsEmpleadosRostros.FieldByName('FOTOEMPLEADO1').AsString:= str1;
+  DM.cdsEmpleadosRostros.FieldByName('FOTOEMPLEADO2').AsString:= str2;
+  DM.cdsEmpleadosRostros.FieldByName('FOTOEMPLEADO3').AsString:= str3;
+  DM.cdsEmpleadosRostros.FieldByName('FOTOEMPLEADO4').AsString:= str4;
+  DM.cdsEmpleadosRostros.FieldByName('FOTOEMPLEADO5').AsString:= str5;
+  DM.cdsEmpleadosRostros.FieldByName('FOTOEMPLEADO6').AsString:= str6;
+  DM.cdsEmpleadosRostros.FieldByName('FOTOEMPLEADO7').AsString:= str7;
+  DM.cdsEmpleadosRostros.FieldByName('FOTOEMPLEADO8').AsString:= str8;
+  DM.cdsEmpleadosRostros.FieldByName('FOTOEMPLEADO9').AsString:= str9;
+  DM.cdsEmpleadosRostros.FieldByName('FOTOEMPLEADO10').AsString:= str10;
+
+  DM.cdsBitacoraServ.Post;
+  DM.cdsBitacoraServ.ApplyUpdates();
+  respuesta:= ' OK';
+  except
+    on E : Exception do
+    respuesta:= E.ClassName+' error raised, with message : '+E.Message;
+  end;
+
+  result:= respuesta;
+
+end;
+
+function Tandroidservice.actualizapersonalrostro(EmpleadoID, Fecha, UsuarioID,
+  EstacionID, foto1base64, foto2base64, foto3base64, foto4base64, foto5base64,
+  foto6base64, foto7base64, foto8base64, foto9base64,
+  foto10base64: AnsiString): AnsiString;
+var
+  bytes1, bytes2, bytes3, bytes4, bytes5, bytes6, bytes7, bytes8, bytes9, bytes10: TBytes;
+  str1, str2, str3, str4, str5, str6, str7, str8, str9, str10: String;
+  respuesta: AnsiString;
+begin
+
+  //-FOTO DE ROSTROS-//
+  bytes1 :=  DecodeBase64(foto1base64);
+  str1 := TEncoding.ANSI.GetString(bytes1);
+  bytes2 :=  DecodeBase64(foto2base64);
+  str2 := TEncoding.ANSI.GetString(bytes2);
+  bytes3 :=  DecodeBase64(foto3base64);
+  str3 := TEncoding.ANSI.GetString(bytes3);
+  bytes4 :=  DecodeBase64(foto4base64);
+  str4 := TEncoding.ANSI.GetString(bytes4);
+  bytes5 :=  DecodeBase64(foto5base64);
+  str5 := TEncoding.ANSI.GetString(bytes5);
+  bytes6 :=  DecodeBase64(foto6base64);
+  str6 := TEncoding.ANSI.GetString(bytes6);
+  bytes7 :=  DecodeBase64(foto7base64);
+  str7 := TEncoding.ANSI.GetString(bytes7);
+  bytes8 :=  DecodeBase64(foto8base64);
+  str8 := TEncoding.ANSI.GetString(bytes8);
+  bytes9 :=  DecodeBase64(foto9base64);
+  str9 := TEncoding.ANSI.GetString(bytes9);
+  bytes10 :=  DecodeBase64(foto10base64);
+  str10 := TEncoding.ANSI.GetString(bytes10);
+  ///////////////////////
+  ///
+
+  try
+  DM.cdsActualizaEmpladosRostro.Close;
+  DM.cdsActualizaEmpladosRostro.ParamByName('IDEmpleado').AsInteger:= strtoint(EmpleadoID);
+  DM.cdsActualizaEmpladosRostro.ParamByName('FOTOEMPLEADO1').AsString:= str1;
+  DM.cdsActualizaEmpladosRostro.ParamByName('FOTOEMPLEADO2').AsString:= str2;
+  DM.cdsActualizaEmpladosRostro.ParamByName('FOTOEMPLEADO3').AsString:= str3;
+  DM.cdsActualizaEmpladosRostro.ParamByName('FOTOEMPLEADO4').AsString:= str4;
+  DM.cdsActualizaEmpladosRostro.ParamByName('FOTOEMPLEADO5').AsString:= str5;
+  DM.cdsActualizaEmpladosRostro.ParamByName('FOTOEMPLEADO6').AsString:= str6;
+  DM.cdsActualizaEmpladosRostro.ParamByName('FOTOEMPLEADO7').AsString:= str7;
+  DM.cdsActualizaEmpladosRostro.ParamByName('FOTOEMPLEADO8').AsString:= str8;
+  DM.cdsActualizaEmpladosRostro.ParamByName('FOTOEMPLEADO9').AsString:= str9;
+  DM.cdsActualizaEmpladosRostro.ParamByName('FOTOEMPLEADO10').AsString:= str10;
+  DM.cdsActualizaEmpladosRostro.Open;
+  except
+    on E : Exception do
+    respuesta:= E.ClassName+' error raised, with message : '+E.Message;
+  end;
+
+  result:= respuesta;
+end;
+
+function Tandroidservice.consultanombresrostros(Nombres,
+  Apellidos: AnsiString): AnsiString;
+begin
+  result:= DM.Servidor.obtendatosfotosnombresempleados(Nombres + ' ' + Apellidos);
+end;
+
+function Tandroidservice.echoDouble(const Value: Double): Double; stdcall;
+begin
+  { TODO : Implement method echoDouble }
+  Result := Value;
+end;
+
+
+initialization
+{ Invokable classes must be registered }
+   InvRegistry.RegisterInvokableClass(Tandroidservice);
+end.
+
